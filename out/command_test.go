@@ -2,6 +2,8 @@ package out_test
 
 import (
 	"errors"
+	"fmt"
+
 	"github.com/Medium/medium-sdk-go"
 	"github.com/cappyzawa/medium-resource"
 	"github.com/cappyzawa/medium-resource/fakes"
@@ -50,15 +52,6 @@ var _ = Describe("Command", func() {
 				Expect(res).To(BeNil())
 			})
 		})
-		Context("when token is invalid", func() {
-			It("error should occur", func() {
-				res, err := command.Run(sourceDir, request)
-				fakeMC.GetUser("")
-				fakeMC.GetUserReturns(nil, errors.New("unauthorized"))
-				Expect(err).To(HaveOccurred())
-				Expect(res).To(BeNil())
-			})
-		})
 		Context("when content_file is empty", func() {
 			BeforeEach(func() {
 				request.Params.ContentFile = ""
@@ -69,11 +62,20 @@ var _ = Describe("Command", func() {
 				Expect(res).To(BeNil())
 			})
 		})
+		Context("when token is invalid", func() {
+			It("error should occur", func() {
+				fakeMC.GetUserReturns(nil, errors.New("unauthorized"))
+				res, err := command.Run(sourceDir, request)
+				Expect(err).To(HaveOccurred())
+				Expect(res).To(BeNil())
+			})
+		})
 		Context("when title is empty", func() {
 			BeforeEach(func() {
 				request.Params.Title = ""
 			})
 			It("the first line of content_file is used", func() {
+				fakeMC.GetUserReturns(&medium.User{ID: "id"}, nil)
 				_, err := command.Run(sourceDir, request)
 				Expect(err).NotTo(HaveOccurred())
 				option := fakeMC.CreatePostArgsForCall(0)
@@ -85,10 +87,11 @@ var _ = Describe("Command", func() {
 				request.Params.Format = ""
 			})
 			It("default format is markdown", func() {
+				fakeMC.GetUserReturns(&medium.User{ID: "id"}, nil)
 				_, err := command.Run(sourceDir, request)
 				Expect(err).NotTo(HaveOccurred())
 				option := fakeMC.CreatePostArgsForCall(0)
-				Expect(option.ContentFormat).To(Equal(medium.ContentFormatMarkdown))
+				Expect(option.ContentFormat).To(Equal(medium.ContentFormat(medium.ContentFormatMarkdown)))
 			})
 		})
 		Context("when status is empty", func() {
@@ -96,17 +99,45 @@ var _ = Describe("Command", func() {
 				request.Params.Status = ""
 			})
 			It("default status is draft", func() {
+				fakeMC.GetUserReturns(&medium.User{ID: "id"}, nil)
 				_, err := command.Run(sourceDir, request)
 				Expect(err).NotTo(HaveOccurred())
 				option := fakeMC.CreatePostArgsForCall(0)
-				Expect(option.PublishStatus).To(Equal(medium.PublishStatusDraft))
+				Expect(option.PublishStatus).To(Equal(medium.PublishStatus(medium.PublishStatusDraft)))
 			})
 		})
 		It("content_file is used as content", func() {
+			fakeMC.GetUserReturns(&medium.User{ID: "id"}, nil)
 			_, err := command.Run(sourceDir, request)
 			Expect(err).NotTo(HaveOccurred())
 			option := fakeMC.CreatePostArgsForCall(0)
-			Expect(option.Content).To(Equal("##item2\ncontent"))
+			Expect(option.Content).To(Equal("## item2\ncontent\n"))
+		})
+	})
+
+	Describe("ExtractTitleAndContent()", func() {
+		var path string
+		Context("file exists", func() {
+			BeforeEach(func() {
+				path = fmt.Sprintf("%s/%s", sourceDir, request.Params.ContentFile)
+			})
+			It("title is first lint of file", func() {
+				title, content, err := command.ExtractTitleAndContent(path)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(title)).To(Equal("item1"))
+				Expect(string(content)).To(Equal("## item2\ncontent\n"))
+			})
+		})
+		Context("file does not exist", func() {
+			BeforeEach(func() {
+				path = "missing/missing"
+			})
+			It("error should occur", func() {
+				title, content, err := command.ExtractTitleAndContent(path)
+				Expect(err).To(HaveOccurred())
+				Expect(title).To(BeEmpty())
+				Expect(content).To(BeEmpty())
+			})
 		})
 	})
 
