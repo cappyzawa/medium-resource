@@ -63,14 +63,18 @@ func (c *Command) Run(sourceDir string, request Request) (*Response, error) {
 		o.License = medium.License(request.Params.License)
 	}
 
-	_, err = c.MediumClient.CreatePost(o)
+	posted, err := c.MediumClient.CreatePost(o)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Response{
-		resource.Version{},
-		[]resource.MetadataPair{},
+		resource.Version{ID: posted.ID},
+		[]resource.MetadataPair{
+			{"title", posted.Title},
+			{"status", string(posted.PublishState)},
+			{"url", posted.URL},
+		},
 	}, nil
 }
 

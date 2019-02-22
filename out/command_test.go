@@ -42,6 +42,15 @@ var _ = Describe("Command", func() {
 	})
 
 	Describe("Run()", func() {
+		BeforeEach(func() {
+			fakeMC.GetUserReturns(&medium.User{ID: "id"}, nil)
+			fakeMC.CreatePostReturns(&medium.Post{
+				ID: "id",
+				Title: "title",
+				PublishState: "draft",
+				URL: "https://posted.com",
+			}, nil)
+		})
 		Context("when token is empty", func() {
 			BeforeEach(func() {
 				request.Source.AccessToken = ""
@@ -112,6 +121,18 @@ var _ = Describe("Command", func() {
 			Expect(err).NotTo(HaveOccurred())
 			option := fakeMC.CreatePostArgsForCall(0)
 			Expect(option.Content).To(Equal("## item2\ncontent\n"))
+		})
+		It("response contains version & metadata", func() {
+			res, err := command.Run(sourceDir, request)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res.Version.ID).To(Equal("id"))
+			Expect(len(res.Metadata)).NotTo(BeZero())
+			Expect(res.Metadata[0].Name).To(Equal("title"))
+			Expect(res.Metadata[0].Value).To(Equal("title"))
+			Expect(res.Metadata[1].Name).To(Equal("status"))
+			Expect(res.Metadata[1].Value).To(Equal("draft"))
+			Expect(res.Metadata[2].Name).To(Equal("url"))
+			Expect(res.Metadata[2].Value).To(Equal("https://posted.com"))
 		})
 	})
 
