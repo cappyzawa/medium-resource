@@ -50,17 +50,11 @@ func (o *Out) Execute(args []string) int {
 }
 
 func (o *Out) inputRequest(req *out.Request) error {
-	if err := json.NewDecoder(o.InStream).Decode(req); err != nil {
-		return err
-	}
-	return nil
+	return json.NewDecoder(o.InStream).Decode(req)
 }
 
 func (o *Out) outputResponse(res *out.Response) error {
-	if err := json.NewEncoder(os.Stdout).Encode(res); err != nil {
-		return err
-	}
-	return nil
+	return json.NewEncoder(os.Stdout).Encode(res)
 }
 
 func main() {
