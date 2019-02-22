@@ -45,10 +45,10 @@ var _ = Describe("Command", func() {
 		BeforeEach(func() {
 			fakeMC.GetUserReturns(&medium.User{ID: "id"}, nil)
 			fakeMC.CreatePostReturns(&medium.Post{
-				ID: "id",
-				Title: "title",
+				ID:           "id",
+				Title:        "title",
 				PublishState: "draft",
-				URL: "https://posted.com",
+				URL:          "https://posted.com",
 			}, nil)
 		})
 		Context("when token is empty", func() {
