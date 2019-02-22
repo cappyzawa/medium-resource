@@ -20,7 +20,7 @@ type Out struct {
 // Execute executes out command.
 func (o *Out) Execute(args []string) int {
 	var req out.Request
-	if err := o.inputRequest(&req); err != nil {
+	if err := json.NewDecoder(o.InStream).Decode(&req); err != nil {
 		fmt.Fprintf(o.ErrStream, "invalid payload: %s\n", err)
 		return 1
 	}
@@ -42,19 +42,11 @@ func (o *Out) Execute(args []string) int {
 		return 1
 	}
 
-	if err := o.outputResponse(res); err != nil {
+	if err := json.NewEncoder(os.Stdout).Encode(res); err != nil {
 		fmt.Fprintf(o.ErrStream, "failed to decode response: %s\n", err)
 		return 1
 	}
 	return 0
-}
-
-func (o *Out) inputRequest(req *out.Request) error {
-	return json.NewDecoder(o.InStream).Decode(req)
-}
-
-func (o *Out) outputResponse(res *out.Response) error {
-	return json.NewEncoder(os.Stdout).Encode(res)
 }
 
 func main() {
