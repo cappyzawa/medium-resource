@@ -35,6 +35,19 @@ type FakeMediumClient struct {
 		result1 *medium.User
 		result2 error
 	}
+	GetUserPublicationsStub        func(string) (*medium.Publications, error)
+	getUserPublicationsMutex       sync.RWMutex
+	getUserPublicationsArgsForCall []struct {
+		arg1 string
+	}
+	getUserPublicationsReturns struct {
+		result1 *medium.Publications
+		result2 error
+	}
+	getUserPublicationsReturnsOnCall map[int]struct {
+		result1 *medium.Publications
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -165,6 +178,69 @@ func (fake *FakeMediumClient) GetUserReturnsOnCall(i int, result1 *medium.User, 
 	}{result1, result2}
 }
 
+func (fake *FakeMediumClient) GetUserPublications(arg1 string) (*medium.Publications, error) {
+	fake.getUserPublicationsMutex.Lock()
+	ret, specificReturn := fake.getUserPublicationsReturnsOnCall[len(fake.getUserPublicationsArgsForCall)]
+	fake.getUserPublicationsArgsForCall = append(fake.getUserPublicationsArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("GetUserPublications", []interface{}{arg1})
+	fake.getUserPublicationsMutex.Unlock()
+	if fake.GetUserPublicationsStub != nil {
+		return fake.GetUserPublicationsStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getUserPublicationsReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeMediumClient) GetUserPublicationsCallCount() int {
+	fake.getUserPublicationsMutex.RLock()
+	defer fake.getUserPublicationsMutex.RUnlock()
+	return len(fake.getUserPublicationsArgsForCall)
+}
+
+func (fake *FakeMediumClient) GetUserPublicationsCalls(stub func(string) (*medium.Publications, error)) {
+	fake.getUserPublicationsMutex.Lock()
+	defer fake.getUserPublicationsMutex.Unlock()
+	fake.GetUserPublicationsStub = stub
+}
+
+func (fake *FakeMediumClient) GetUserPublicationsArgsForCall(i int) string {
+	fake.getUserPublicationsMutex.RLock()
+	defer fake.getUserPublicationsMutex.RUnlock()
+	argsForCall := fake.getUserPublicationsArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeMediumClient) GetUserPublicationsReturns(result1 *medium.Publications, result2 error) {
+	fake.getUserPublicationsMutex.Lock()
+	defer fake.getUserPublicationsMutex.Unlock()
+	fake.GetUserPublicationsStub = nil
+	fake.getUserPublicationsReturns = struct {
+		result1 *medium.Publications
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeMediumClient) GetUserPublicationsReturnsOnCall(i int, result1 *medium.Publications, result2 error) {
+	fake.getUserPublicationsMutex.Lock()
+	defer fake.getUserPublicationsMutex.Unlock()
+	fake.GetUserPublicationsStub = nil
+	if fake.getUserPublicationsReturnsOnCall == nil {
+		fake.getUserPublicationsReturnsOnCall = make(map[int]struct {
+			result1 *medium.Publications
+			result2 error
+		})
+	}
+	fake.getUserPublicationsReturnsOnCall[i] = struct {
+		result1 *medium.Publications
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeMediumClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -172,6 +248,8 @@ func (fake *FakeMediumClient) Invocations() map[string][][]interface{} {
 	defer fake.createPostMutex.RUnlock()
 	fake.getUserMutex.RLock()
 	defer fake.getUserMutex.RUnlock()
+	fake.getUserPublicationsMutex.RLock()
+	defer fake.getUserPublicationsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

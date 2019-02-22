@@ -9,4 +9,6 @@ type MediumClient interface {
 	CreatePost(o medium.CreatePostOptions) (*medium.Post, error)
 	// https://godoc.org/github.com/Medium/medium-sdk-go#Medium.GetUser
 	GetUser(userID string) (*medium.User, error)
+	// https://godoc.org/github.com/Medium/medium-sdk-go#Medium.GetUserPublications
+	GetUserPublications(userID string) (*medium.Publications, error)
 }
