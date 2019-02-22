@@ -16,6 +16,8 @@ run:
   args:
     - -c
     - |
+      go get -u golang.org/x/lint/golint
       go mod download
+      golint ./...
       go test -v ./...
   
