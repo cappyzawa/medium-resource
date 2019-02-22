@@ -1,6 +1,7 @@
 package out_test
 
 import (
+	"errors"
 	"github.com/Medium/medium-sdk-go"
 	"github.com/cappyzawa/medium-resource"
 	"github.com/cappyzawa/medium-resource/fakes"
@@ -45,6 +46,15 @@ var _ = Describe("Command", func() {
 			})
 			It("error should occur", func() {
 				res, err := command.Run(sourceDir, request)
+				Expect(err).To(HaveOccurred())
+				Expect(res).To(BeNil())
+			})
+		})
+		Context("when token is invalid", func() {
+			It("error should occur", func() {
+				res, err := command.Run(sourceDir, request)
+				fakeMC.GetUser("")
+				fakeMC.GetUserReturns(nil, errors.New("unauthorized"))
 				Expect(err).To(HaveOccurred())
 				Expect(res).To(BeNil())
 			})
