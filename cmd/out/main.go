@@ -10,12 +10,14 @@ import (
 	"github.com/cappyzawa/medium-resource/out"
 )
 
+// Out is struct for executing out command.
 type Out struct {
 	InStream  io.Reader
 	OutStream io.Writer
 	ErrStream io.Writer
 }
 
+// Execute executes out command.
 func (o *Out) Execute(args []string) int {
 	var req out.Request
 	if err := o.inputRequest(&req); err != nil {

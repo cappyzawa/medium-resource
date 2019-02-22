@@ -10,11 +10,12 @@ import (
 	"github.com/cappyzawa/medium-resource"
 )
 
+// Command has MediumClient for posting a content.
 type Command struct {
 	MediumClient resource.MediumClient
 }
 
-// Run publish an article based on request.
+// Run publishes an article based on request.
 func (c *Command) Run(sourceDir string, request Request) (*Response, error) {
 	if request.Source.AccessToken == "" {
 		return nil, errors.New("\"access_token\" is missing")
@@ -78,6 +79,7 @@ func (c *Command) Run(sourceDir string, request Request) (*Response, error) {
 	}, nil
 }
 
+// ExtractTitleAndContent extracts title and content from file.
 func (c *Command) ExtractTitleAndContent(path string) (string, string, error) {
 	contents, err := ioutil.ReadFile(path)
 	if err != nil {
