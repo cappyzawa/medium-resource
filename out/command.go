@@ -4,11 +4,19 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"path"
+	"regexp"
 	"strings"
 
 	"github.com/Medium/medium-sdk-go"
 	"github.com/cappyzawa/medium-resource"
 )
+
+var r *regexp.Regexp
+
+func init() {
+	r = regexp.MustCompile(`<title>.*?</title>`)
+}
 
 // Command has MediumClient for posting a content.
 type Command struct {
@@ -33,24 +41,19 @@ func (c *Command) Run(sourceDir string, request Request) (*Response, error) {
 		UserID:        u.ID,
 		Title:         "",
 		Content:       "",
-		ContentFormat: medium.ContentFormatMarkdown,
+		ContentFormat: "",
 		Tags:          []string{},
 		CanonicalURL:  "",
 		PublishStatus: medium.PublishStatusDraft,
 		License:       "",
 	}
-	title, content, err := c.ExtractTitleAndContent(fmt.Sprintf("%s/%s", sourceDir, request.Params.ContentFile))
+	format, title, content, err := c.ExtractFromFile(fmt.Sprintf("%s/%s", sourceDir, request.Params.ContentFile))
 	if err != nil {
 		return nil, err
 	}
 	o.Content = content
 	o.Title = title
-	if request.Params.Title != "" {
-		o.Title = request.Params.Title
-	}
-	if request.Params.Format != "" {
-		o.ContentFormat = medium.ContentFormat(request.Params.Format)
-	}
+	o.ContentFormat = format
 	if len(request.Params.Tags) != 0 {
 		o.Tags = append(o.Tags, request.Params.Tags...)
 	}
@@ -79,14 +82,43 @@ func (c *Command) Run(sourceDir string, request Request) (*Response, error) {
 	}, nil
 }
 
-// ExtractTitleAndContent extracts title and content from file.
-func (c *Command) ExtractTitleAndContent(path string) (string, string, error) {
-	contents, err := ioutil.ReadFile(path)
+// ExtractFromFile extracts format, title, content from file.
+func (c *Command) ExtractFromFile(filePath string) (medium.ContentFormat, string, string, error) {
+	contents, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
+	switch path.Ext(filePath) {
+	case ".md":
+		title, content, err := c.extractTitleAndContentByMd(contents)
+		if err != nil {
+			return "", "", "", err
+		}
+		return medium.ContentFormat(medium.ContentFormatMarkdown), title, content, nil
+	case ".html":
+		title, content, err := c.extractTitleAndContentByHTML(contents)
+		if err != nil {
+			return "", "", "", err
+		}
+		return medium.ContentFormatHTML, title, content, nil
+	default:
+		return "", "", "", errors.New("no support ext: " + path.Ext(filePath))
+	}
+}
+
+func (c *Command) extractTitleAndContentByMd(contents []byte) (string, string, error) {
 	separated := strings.Split(string(contents), "\n")
 	title := strings.TrimLeft(separated[0], "# ")
 	content := strings.Join(separated[1:], "\n")
-	return title, content, err
+	return title, content, nil
+}
+
+func (c *Command) extractTitleAndContentByHTML(contents []byte) (string, string, error) {
+	matched := r.FindSubmatch(contents)
+	// matched = <title>title</title>
+	title := strings.TrimSuffix(strings.TrimPrefix(string(matched[0]), "<title>"), "</title>")
+	if title == "" {
+		return "", "", errors.New("title tag is required")
+	}
+	return title, string(contents), nil
 }

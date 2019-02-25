@@ -2,7 +2,6 @@ package out_test
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/Medium/medium-sdk-go"
 	"github.com/cappyzawa/medium-resource"
@@ -31,7 +30,6 @@ var _ = Describe("Command", func() {
 				AccessToken: "token",
 			},
 			Params: out.Params{
-				Format:       "markdown",
 				ContentFile:  "out/content_file.md",
 				Tags:         []string{"tag1", "tag2"},
 				CanonicalURL: "https://canonical.com",
@@ -79,28 +77,37 @@ var _ = Describe("Command", func() {
 				Expect(res).To(BeNil())
 			})
 		})
-		Context("when title is empty", func() {
-			BeforeEach(func() {
-				request.Params.Title = ""
-			})
+		Context("when markdown file as content_file", func() {
 			It("the first line of content_file is used", func() {
 				fakeMC.GetUserReturns(&medium.User{ID: "id"}, nil)
 				_, err := command.Run(sourceDir, request)
 				Expect(err).NotTo(HaveOccurred())
 				option := fakeMC.CreatePostArgsForCall(0)
 				Expect(option.Title).To(Equal("item1"))
+				Expect(option.ContentFormat).To(Equal(medium.ContentFormat(medium.ContentFormatMarkdown)))
 			})
 		})
-		Context("when format is empty", func() {
+		Context("when html file as content_file", func() {
 			BeforeEach(func() {
-				request.Params.Format = ""
+				request.Params.ContentFile = "out/content_file.html"
 			})
-			It("default format is markdown", func() {
+			It("title tag's value is used", func() {
 				fakeMC.GetUserReturns(&medium.User{ID: "id"}, nil)
 				_, err := command.Run(sourceDir, request)
 				Expect(err).NotTo(HaveOccurred())
 				option := fakeMC.CreatePostArgsForCall(0)
-				Expect(option.ContentFormat).To(Equal(medium.ContentFormat(medium.ContentFormatMarkdown)))
+				Expect(option.Title).To(Equal("title"))
+				Expect(option.ContentFormat).To(Equal(medium.ContentFormatHTML))
+			})
+		})
+		Context("when other file as content_file", func() {
+			BeforeEach(func() {
+				request.Params.ContentFile = "out/content_file.go"
+			})
+			It("error should occur", func() {
+				fakeMC.GetUserReturns(&medium.User{ID: "id"}, nil)
+				_, err := command.Run(sourceDir, request)
+				Expect(err).To(HaveOccurred())
 			})
 		})
 		Context("when status is empty", func() {
@@ -135,31 +142,4 @@ var _ = Describe("Command", func() {
 			Expect(res.Metadata[2].Value).To(Equal("https://posted.com"))
 		})
 	})
-
-	Describe("ExtractTitleAndContent()", func() {
-		var path string
-		Context("file exists", func() {
-			BeforeEach(func() {
-				path = fmt.Sprintf("%s/%s", sourceDir, request.Params.ContentFile)
-			})
-			It("title is first lint of file", func() {
-				title, content, err := command.ExtractTitleAndContent(path)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(string(title)).To(Equal("item1"))
-				Expect(string(content)).To(Equal("## item2\ncontent\n"))
-			})
-		})
-		Context("file does not exist", func() {
-			BeforeEach(func() {
-				path = "missing/missing"
-			})
-			It("error should occur", func() {
-				title, content, err := command.ExtractTitleAndContent(path)
-				Expect(err).To(HaveOccurred())
-				Expect(title).To(BeEmpty())
-				Expect(content).To(BeEmpty())
-			})
-		})
-	})
-
 })
