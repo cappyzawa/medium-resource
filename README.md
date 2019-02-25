@@ -19,9 +19,7 @@ This resource can post **one story**, so you should prepare preprocessing task(e
 ### `out`: Post an article.
 Posts an article to medium based on parameters.
 #### Parameters
-* `content_file`: Required. This Resource posts an article based on specified file.
-* `format`: Optional. Default `markdown`. if you want to use `html`, please set it.
-* `title`: Optional. If this parameter does not set, first-line of the `content_file` is used as title.
+* `content_file`: Required. This Resource posts an article based on specified file(Markdown or HTML).
 * `tags`: Optional. You can set tags as array.
 * `canonical_url`: Optional.
 * `status`: Optional. Default `draft`.

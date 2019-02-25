@@ -96,7 +96,7 @@ func (c *Command) ExtractFromFile(filePath string) (medium.ContentFormat, string
 		}
 		return medium.ContentFormat(medium.ContentFormatMarkdown), title, content, nil
 	case ".html":
-		title, content, err := c.extractTitleAndContentByHtml(contents)
+		title, content, err := c.extractTitleAndContentByHTML(contents)
 		if err != nil {
 			return "", "", "", err
 		}
@@ -113,7 +113,7 @@ func (c *Command) extractTitleAndContentByMd(contents []byte) (string, string, e
 	return title, content, nil
 }
 
-func (c *Command) extractTitleAndContentByHtml(contents []byte) (string, string, error) {
+func (c *Command) extractTitleAndContentByHTML(contents []byte) (string, string, error) {
 	matched := r.FindSubmatch(contents)
 	// matched = <title>title</title>
 	title := strings.TrimSuffix(strings.TrimPrefix(string(matched[0]), "<title>"), "</title>")
