@@ -10,8 +10,6 @@ type Request struct {
 
 // Params is parameters for put.
 type Params struct {
-	Title        string   `json:"title"`
-	Format       string   `json:"format"`
 	ContentFile  string   `json:"content_file"`
 	Tags         []string `json:"tags"`
 	CanonicalURL string   `json:"canonical_url"`
