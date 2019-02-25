@@ -12,8 +12,10 @@ This resource can post **one story**, so you should prepare preprocessing task(e
 * `access_token`: Required. You can get the access token from [Self\-issued access tokens](https://github.com/Medium/medium-api-docs#22-self-issued-access-tokens)
 
 ## Behavior
-### `check`: none
-### `in`: none
+### `check` & `in` : none
+[Medium API](https://github.com/Medium/medium-api-docs#32-publications) does not get stories.  
+[starkandwayne/rss\-resource: A Concourse resource to grab RSS feeds and their contents](https://github.com/starkandwayne/rss-resource) can get stories by using rss.  
+
 ### `out`: Post an article.
 Posts an article to medium based on parameters.
 #### Parameters
