@@ -1,7 +1,7 @@
 # medium-resource
 [![Go Report Card](https://goreportcard.com/badge/cappyzawa/medium-resource)](https://goreportcard.com/report/cappyzawa/medium-resource)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Build Status](https://concourse.ik.am:14161/api/v1/teams/cappyzawa/pipelines/medium-resource/jobs/test-master/badge)](https://concourse.ik.am:14161/teams/cappyzawa/pipelines/medium-resource)
+[![Build Status](https://concourse.ik.am/api/v1/teams/cappyzawa/pipelines/medium-resource/jobs/test-master/badge)](https://concourse.ik.am:14161/teams/cappyzawa/pipelines/medium-resource)
 [![Docker Pulls](https://img.shields.io/docker/pulls/cappyzawa/medium-resource.svg)](https://hub.docker.com/r/cappyzawa/medium-resource)
 
 A concourse resource for positing a story to medium.  
